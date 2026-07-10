@@ -1,0 +1,126 @@
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/PressStart2P-Regular.woff2') format('woff2');
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #05040a;
+  color: #eee;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  overscroll-behavior-y: contain;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.game-container {
+  position: relative;
+  margin: 10px;
+  width: min(480px, calc(100vw - 20px));
+  border: 2px solid #333;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 0 24px rgba(255, 140, 60, 0.15);
+  touch-action: none;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #05040a;
+}
+
+/* Overlaid on the bottom of the canvas; hidden unless the primary input is touch. */
+.touch-controls {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px;
+  align-items: flex-end;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.touch-controls > * {
+  pointer-events: auto;
+}
+
+.dpad {
+  display: flex;
+  gap: 10px;
+}
+
+.touch-btn {
+  width: 15%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 215, 106, 0.5);
+  background: rgba(20, 18, 28, 0.55);
+  color: #ffd76a;
+  font-size: min(6vw, 24px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.touch-btn:active {
+  background: rgba(255, 215, 106, 0.3);
+}
+
+.shoot-btn {
+  width: 19%;
+  font-size: min(7vw, 28px);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .touch-controls {
+    display: flex;
+  }
+}
+
+.controls-row {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.sound-toggle {
+  background: #1a1a24;
+  color: #eee;
+  border: 1px solid #444;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.sound-toggle:hover {
+  background: #2a2a36;
+}
