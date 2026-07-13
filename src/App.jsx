@@ -472,8 +472,8 @@ export default function App() {
 
       ctx.font = '24px sans-serif'
       ctx.textAlign = 'center'
-      for (const bullet of state.bullets) ctx.fillText('🐠', bullet.x + bullet.w / 2, bullet.y + bullet.h)
-      for (const enemyBullet of state.enemyBullets) ctx.fillText('🐶', enemyBullet.x + enemyBullet.w / 2, enemyBullet.y + enemyBullet.h)
+      for (const bullet of state.bullets) ctx.fillText('fish', bullet.x + bullet.w / 2, bullet.y + bullet.h)
+      for (const enemyBullet of state.enemyBullets) ctx.fillText('dog', enemyBullet.x + enemyBullet.w / 2, enemyBullet.y + enemyBullet.h)
 
       ctx.save()
       if (state.player.dying) {
@@ -549,7 +549,7 @@ export default function App() {
               onPointerLeave={handleTouchEnd('left')}
               onPointerCancel={handleTouchEnd('left')}
             >
-              ◀
+              left
             </button>
             <button
               className="touch-btn"
@@ -558,7 +558,7 @@ export default function App() {
               onPointerLeave={handleTouchEnd('right')}
               onPointerCancel={handleTouchEnd('right')}
             >
-              ▶
+              right
             </button>
           </div>
           <button
@@ -568,16 +568,16 @@ export default function App() {
             onPointerLeave={handleTouchEnd('space')}
             onPointerCancel={handleTouchEnd('space')}
           >
-            ●
+            fire
           </button>
         </div>
       </div>
       <div className="controls-row">
         <button className="sound-toggle" onClick={() => setSoundOn((prev) => !prev)}>
-          {soundOn ? '🔊 Sound On' : '🔇 Sound Off'}
+          {soundOn ? 'Sound On' : 'Sound Off'}
         </button>
         <button className="sound-toggle" onClick={() => setPaused((prev) => !prev)}>
-          {paused ? '▶️ Resume' : '⏸️ Paws'}
+          {paused ? 'Resume' : 'Paws'}
         </button>
       </div>
     </div>
