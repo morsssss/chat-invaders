@@ -8,6 +8,10 @@ const PLAYER_W = 60
 const PLAYER_H = 60
 const ENEMY_W = 46
 const ENEMY_H = 46
+const BULLET_W = 18
+const BULLET_H = 18
+const ENEMY_BULLET_W = 14
+const ENEMY_BULLET_H = 14
 const GRID_COLS = 5
 const GRID_ROWS = 4
 const GRID_GAP = 14
@@ -199,7 +203,11 @@ export default function App() {
       coder.src = '/images/cat-who-codes.png'
       const player = new Image()
       player.src = '/images/cat-player.png'
-      imagesRef.current = { plain, tie, coder, player }
+      const fish = new Image()
+      fish.src = '/images/fish.png'
+      const dog = new Image()
+      dog.src = '/images/dog.png'
+      imagesRef.current = { plain, tie, coder, player, fish, dog }
     }
     if (!audioRef.current) {
       audioRef.current = new Audio('/sounds/meow.mp3')
@@ -470,10 +478,8 @@ export default function App() {
         ctx.restore()
       }
 
-      ctx.font = '24px sans-serif'
-      ctx.textAlign = 'center'
-      for (const bullet of state.bullets) ctx.fillText('fish', bullet.x + bullet.w / 2, bullet.y + bullet.h)
-      for (const enemyBullet of state.enemyBullets) ctx.fillText('goal', enemyBullet.x + enemyBullet.w / 2, enemyBullet.y + enemyBullet.h)
+      for (const bullet of state.bullets) ctx.drawImage(imgs.fish, bullet.x, bullet.y, BULLET_W, BULLET_H)
+      for (const enemyBullet of state.enemyBullets) ctx.drawImage(imgs.dog, enemyBullet.x, enemyBullet.y, ENEMY_BULLET_W, ENEMY_BULLET_H)
 
       ctx.save()
       if (state.player.dying) {
