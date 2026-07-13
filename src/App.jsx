@@ -473,7 +473,7 @@ export default function App() {
       ctx.font = '24px sans-serif'
       ctx.textAlign = 'center'
       for (const bullet of state.bullets) ctx.fillText('fish', bullet.x + bullet.w / 2, bullet.y + bullet.h)
-      for (const enemyBullet of state.enemyBullets) ctx.fillText('dog', enemyBullet.x + enemyBullet.w / 2, enemyBullet.y + enemyBullet.h)
+      for (const enemyBullet of state.enemyBullets) ctx.fillText('goal', enemyBullet.x + enemyBullet.w / 2, enemyBullet.y + enemyBullet.h)
 
       ctx.save()
       if (state.player.dying) {
