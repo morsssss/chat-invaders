@@ -199,7 +199,11 @@ export default function App() {
       coder.src = '/images/cat-who-codes.png'
       const player = new Image()
       player.src = '/images/cat-player.png'
-      imagesRef.current = { plain, tie, coder, player }
+      const fish = new Image()
+      fish.src = '/images/flying-fish.png'
+      const dog = new Image()
+      dog.src = '/images/surprised-dog.png'
+      imagesRef.current = { plain, tie, coder, player, fish, dog }
     }
     if (!audioRef.current) {
       audioRef.current = new Audio('/sounds/meow.mp3')
@@ -306,7 +310,7 @@ export default function App() {
       // shooting
       state.player.cooldown -= deltaMs
       if (keys.space && state.player.cooldown <= 0) {
-        state.bullets.push({ x: state.player.x + PLAYER_W / 2 - 4, y: state.player.y, w: 18, h: 18 })
+        state.bullets.push({ x: state.player.x + PLAYER_W / 2 - 10, y: state.player.y, w: 20, h: 38 })
         state.player.cooldown = FIRE_COOLDOWN_MS
       }
 
@@ -348,7 +352,7 @@ export default function App() {
         state.fireTimer -= deltaMs
         if (state.fireTimer <= 0) {
           const shooter = activeEnemies[Math.floor(Math.random() * activeEnemies.length)]
-          state.enemyBullets.push({ x: shooter.x + shooter.w / 2 - 4, y: shooter.y + shooter.h, w: 14, h: 14 })
+          state.enemyBullets.push({ x: shooter.x + shooter.w / 2 - 12, y: shooter.y + shooter.h, w: 28, h: 35 })
           state.fireTimer = rand(ENEMY_FIRE_MIN, ENEMY_FIRE_MAX)
         }
 
@@ -470,10 +474,8 @@ export default function App() {
         ctx.restore()
       }
 
-      ctx.font = '24px sans-serif'
-      ctx.textAlign = 'center'
-      for (const bullet of state.bullets) ctx.fillText('🐠', bullet.x + bullet.w / 2, bullet.y + bullet.h)
-      for (const enemyBullet of state.enemyBullets) ctx.fillText('🐶', enemyBullet.x + enemyBullet.w / 2, enemyBullet.y + enemyBullet.h)
+      for (const bullet of state.bullets) ctx.drawImage(imgs.fish, bullet.x, bullet.y, bullet.w, bullet.h)
+      for (const enemyBullet of state.enemyBullets) ctx.drawImage(imgs.dog, enemyBullet.x, enemyBullet.y, enemyBullet.w, enemyBullet.h)
 
       ctx.save()
       if (state.player.dying) {
@@ -549,7 +551,7 @@ export default function App() {
               onPointerLeave={handleTouchEnd('left')}
               onPointerCancel={handleTouchEnd('left')}
             >
-              ◀
+              <img src="/images/left-button.svg" alt="Move left" draggable="false" />
             </button>
             <button
               className="touch-btn"
@@ -558,7 +560,7 @@ export default function App() {
               onPointerLeave={handleTouchEnd('right')}
               onPointerCancel={handleTouchEnd('right')}
             >
-              ▶
+              <img src="/images/right-buton.svg" alt="Move right" draggable="false" />
             </button>
           </div>
           <button
@@ -568,16 +570,18 @@ export default function App() {
             onPointerLeave={handleTouchEnd('space')}
             onPointerCancel={handleTouchEnd('space')}
           >
-            ●
+            <img src="/images/shoot-button.png" alt="Shoot" draggable="false" />
           </button>
         </div>
       </div>
       <div className="controls-row">
         <button className="sound-toggle" onClick={() => setSoundOn((prev) => !prev)}>
-          {soundOn ? '🔊 Sound On' : '🔇 Sound Off'}
+          <img className="btn-icon" src={soundOn ? '/images/sound-on.svg' : '/images/sound-off.svg'} alt="" />
+          {soundOn ? 'Sound On' : 'Sound Off'}
         </button>
         <button className="sound-toggle" onClick={() => setPaused((prev) => !prev)}>
-          {paused ? '▶️ Resume' : '⏸️ Paws'}
+          <img className="btn-icon" src={paused ? '/images/play-button.png' : '/images/pause-button.png'} alt="" />
+          {paused ? 'Resume' : 'Paws'}
         </button>
       </div>
     </div>
