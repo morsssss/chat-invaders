@@ -167,6 +167,7 @@ export default function App() {
   const keysRef = useRef({ left: false, right: false, space: false })
   const imagesRef = useRef(null)
   const audioRef = useRef(null)
+  const woofAudioRef = useRef(null)
   const [soundOn, setSoundOn] = useState(true)
   const soundOnRef = useRef(soundOn)
   const [paused, setPaused] = useState(false)
@@ -208,6 +209,9 @@ export default function App() {
     if (!audioRef.current) {
       audioRef.current = new Audio('/sounds/meow.mp3')
     }
+    if (!woofAudioRef.current) {
+      woofAudioRef.current = new Audio('/sounds/woof.mp3')
+    }
 
     // Plays the meow sound effect (skipped entirely if sound is muted). Cloning the
     // audio node lets overlapping hits each play their own copy instead of cutting
@@ -216,6 +220,14 @@ export default function App() {
       if (!soundOnRef.current) return
       const audioClone = audioRef.current.cloneNode()
       audioClone.volume = 0.6
+      audioClone.play().catch(() => {})
+    }
+
+    // Plays the woof sound effect when the player dies.
+    const playWoof = () => {
+      if (!soundOnRef.current) return
+      const audioClone = woofAudioRef.current.cloneNode()
+      audioClone.volume = 0.7
       audioClone.play().catch(() => {})
     }
 
@@ -396,6 +408,7 @@ export default function App() {
             state.player.dying = true
             state.player.deathT = 0
             state.phase = 'dying'
+            playWoof()
             break
           }
         }
