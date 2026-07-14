@@ -542,7 +542,19 @@ export default function App() {
     <div className="game-shell">
       <div className="game-container">
         <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H} />
-        <div className="touch-controls">
+      </div>
+      <div className="controls-row">
+        <button className="sound-toggle" onClick={() => setSoundOn((prev) => !prev)}>
+          <img className="btn-icon" src={soundOn ? '/images/sound-on.svg' : '/images/sound-off.svg'} alt="" />
+          {soundOn ? 'Sound On' : 'Sound Off'}
+        </button>
+        <button className="sound-toggle" onClick={() => setPaused((prev) => !prev)}>
+          <img className="btn-icon" src={paused ? '/images/play-button.png' : '/images/pause-button.png'} alt="" />
+          {paused ? 'Resume' : 'Paws'}
+        </button>
+      </div>
+      <div className="touch-controls">
+        <div className="touch-controls-inner">
           <div className="dpad">
             <button
               className="touch-btn"
@@ -573,16 +585,6 @@ export default function App() {
             <img src="/images/shoot-button.png" alt="Shoot" draggable="false" />
           </button>
         </div>
-      </div>
-      <div className="controls-row">
-        <button className="sound-toggle" onClick={() => setSoundOn((prev) => !prev)}>
-          <img className="btn-icon" src={soundOn ? '/images/sound-on.svg' : '/images/sound-off.svg'} alt="" />
-          {soundOn ? 'Sound On' : 'Sound Off'}
-        </button>
-        <button className="sound-toggle" onClick={() => setPaused((prev) => !prev)}>
-          <img className="btn-icon" src={paused ? '/images/play-button.png' : '/images/pause-button.png'} alt="" />
-          {paused ? 'Resume' : 'Paws'}
-        </button>
       </div>
     </div>
   )

@@ -51,21 +51,25 @@ canvas {
   background: #05040a;
 }
 
-/* Overlaid on the bottom of the canvas; hidden unless the primary input is touch. */
+/* Pinned to the actual bottom edge of the screen (not overlaid on the canvas);
+   hidden unless the primary input is touch. */
 .touch-controls {
   display: none;
-  position: absolute;
+  position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 12px;
-  align-items: flex-end;
-  justify-content: space-between;
-  pointer-events: none;
+  justify-content: center;
+  padding: 12px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, rgba(5, 4, 10, 0.92), rgba(5, 4, 10, 0));
+  z-index: 10;
 }
 
-.touch-controls > * {
-  pointer-events: auto;
+.touch-controls-inner {
+  width: min(480px, calc(100vw - 20px));
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
 }
 
 .dpad {
@@ -99,12 +103,18 @@ canvas {
 }
 
 .shoot-btn {
-  width: 19%;
+  width: 26%;
 }
 
 @media (hover: none) and (pointer: coarse) {
   .touch-controls {
     display: flex;
+  }
+
+  /* Reserves room at the bottom of the page so the fixed touch bar never
+     covers the sound/pause row, even on short viewports. */
+  .game-shell {
+    padding-bottom: 96px;
   }
 }
 
