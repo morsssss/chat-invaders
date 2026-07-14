@@ -26,3 +26,4 @@ Then open the printed local URL (typically http://localhost:5173).
 ## Credits
 
 - Meow sound effect from [Pixabay](https://pixabay.com/sound-effects/search/meow/).
+- Many icons are adpated from [FreeSVG](https://freesvg.org/)
