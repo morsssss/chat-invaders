@@ -572,7 +572,7 @@ export default function App() {
               onPointerLeave={handleTouchEnd('right')}
               onPointerCancel={handleTouchEnd('right')}
             >
-              <img src="/images/right-buton.svg" alt="Move right" draggable="false" />
+              <img src="/images/right-button.svg" alt="Move right" draggable="false" />
             </button>
           </div>
           <button
