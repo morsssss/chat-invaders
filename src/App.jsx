@@ -31,6 +31,14 @@ const INTRO_MS = 2000
 const WIN_MS = 1800
 const ENEMY_DEATH_MS = 620
 const STAR_COUNT = 80
+const SOCCER_BALL_SPEED = 4
+const SOCCER_BALL_SPAWN_INTERVAL_MS = 5000
+const SOCCER_BALL_W = 32
+const SOCCER_BALL_H = 32
+const SOCCER_BALL_POINTS = 500
+const SOCCER_BALL_Y = 30
+const EXPLOSION_DURATION_MS = 800
+const EXPLOSION_PARTICLES = 12
 
 const rand = (min, max) => min + Math.random() * (max - min)
 
@@ -109,6 +117,36 @@ function freshPlayer() {
   }
 }
 
+// Returns a soccer ball that travels across the top of the screen.
+function freshSoccerBall() {
+  return {
+    x: rand(0, CANVAS_W - SOCCER_BALL_W),
+    y: SOCCER_BALL_Y,
+    w: SOCCER_BALL_W,
+    h: SOCCER_BALL_H,
+    vx: Math.random() < 0.5 ? SOCCER_BALL_SPEED : -SOCCER_BALL_SPEED,
+    active: true,
+  }
+}
+
+// Builds explosion particles for the soccer ball hit effect.
+function buildExplosion(x, y) {
+  const particles = []
+  for (let i = 0; i < EXPLOSION_PARTICLES; i++) {
+    particles.push({
+      x: x + SOCCER_BALL_W / 2,
+      y: y + SOCCER_BALL_H / 2,
+      vx: rand(-4, 4),
+      vy: rand(-4, 4),
+      life: 1,
+      maxLife: rand(0.7, 1.0),
+      size: rand(2, 5),
+      color: ['#ff0', '#f80', '#f40', '#ff0'][Math.floor(Math.random() * 4)],
+    })
+  }
+  return particles
+}
+
 // Builds the full initial game state for a brand new game, with score, lives, and
 // wave all reset to their starting values.
 function freshState() {
@@ -127,6 +165,9 @@ function freshState() {
     enemyBullets: [],
     enemies: buildEnemies(),
     stars: buildStars(),
+    soccerBall: null,
+    soccerBallTimer: SOCCER_BALL_SPAWN_INTERVAL_MS,
+    explosions: [],
   }
 }
 
@@ -203,7 +244,9 @@ export default function App() {
       fish.src = '/images/flying-fish.png'
       const dog = new Image()
       dog.src = '/images/surprised-dog.png'
-      imagesRef.current = { plain, tie, coder, player, fish, dog }
+      const soccerBall = new Image()
+      soccerBall.src = '/images/soccer-ball.png'
+      imagesRef.current = { plain, tie, coder, player, fish, dog, soccerBall }
     }
     if (!audioRef.current) {
       audioRef.current = new Audio('/sounds/meow.mp3')
@@ -273,6 +316,35 @@ export default function App() {
           enemy.y += enemy.flyVY * frameScale
           enemy.rot += enemy.rotSpeed * frameScale
           if (enemy.deathT > ENEMY_DEATH_MS) enemy.alive = false
+        }
+      }
+
+      // explosion particles animation
+      state.explosions = state.explosions.filter((exp) => exp.life > 0)
+      for (const exp of state.explosions) {
+        exp.life -= deltaMs / EXPLOSION_DURATION_MS
+        for (const p of exp.particles) {
+          p.x += p.vx * frameScale
+          p.y += p.vy * frameScale
+          p.vy += 0.05 * frameScale
+        }
+      }
+
+      // soccer ball spawning and movement across the top of the screen
+      if (state.phase === 'playing') {
+        state.soccerBallTimer -= deltaMs
+        if (state.soccerBallTimer <= 0) {
+          state.soccerBall = freshSoccerBall()
+          state.soccerBallTimer = SOCCER_BALL_SPAWN_INTERVAL_MS
+        }
+
+        if (state.soccerBall && state.soccerBall.active) {
+          state.soccerBall.x += state.soccerBall.vx * frameScale
+
+          // Remove soccer ball when it goes off screen
+          if (state.soccerBall.x + SOCCER_BALL_W < 0 || state.soccerBall.x > CANVAS_W) {
+            state.soccerBall = null
+          }
         }
       }
 
@@ -363,6 +435,29 @@ export default function App() {
             break
           }
         }
+      }
+
+      // collisions: player bullets vs soccer ball
+      if (state.soccerBall && state.soccerBall.active) {
+        const usedBullets = new Set()
+        for (const bullet of state.bullets) {
+          if (usedBullets.has(bullet)) continue
+          if (rectsOverlap(bullet, state.soccerBall)) {
+            usedBullets.add(bullet)
+            state.soccerBall.active = false
+            state.score += SOCCER_BALL_POINTS
+            state.explosions.push({ particles: buildExplosion(state.soccerBall.x, state.soccerBall.y), life: 1 })
+            playMeow()
+            // Remove soccer ball after a brief delay to allow explosion to start
+            setTimeout(() => {
+              if (stateRef.current.soccerBall && !stateRef.current.soccerBall.active) {
+                stateRef.current.soccerBall = null
+              }
+            }, 100)
+            break
+          }
+        }
+        if (usedBullets.size) state.bullets = state.bullets.filter((bullet) => !usedBullets.has(bullet))
       }
 
       // collisions: player bullets vs enemies
@@ -476,6 +571,24 @@ export default function App() {
 
       for (const bullet of state.bullets) ctx.drawImage(imgs.fish, bullet.x, bullet.y, bullet.w, bullet.h)
       for (const enemyBullet of state.enemyBullets) ctx.drawImage(imgs.dog, enemyBullet.x, enemyBullet.y, enemyBullet.w, enemyBullet.h)
+
+      // Draw soccer ball if active
+      if (state.soccerBall && state.soccerBall.active) {
+        ctx.drawImage(imgs.soccerBall, state.soccerBall.x, state.soccerBall.y, state.soccerBall.w, state.soccerBall.h)
+      }
+
+      // Draw explosions
+      for (const exp of state.explosions) {
+        for (const p of exp.particles) {
+          const alpha = Math.min(1, exp.life * 2)
+          ctx.globalAlpha = alpha
+          ctx.fillStyle = p.color
+          ctx.beginPath()
+          ctx.arc(p.x, p.y, p.size * exp.life, 0, Math.PI * 2)
+          ctx.fill()
+        }
+      }
+      ctx.globalAlpha = 1
 
       ctx.save()
       if (state.player.dying) {
