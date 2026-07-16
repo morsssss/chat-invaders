@@ -31,6 +31,11 @@ const INTRO_MS = 2000
 const WIN_MS = 1800
 const ENEMY_DEATH_MS = 620
 const STAR_COUNT = 80
+const SOCCER_BALL_SPEED = 3.5
+const SOCCER_BALL_SPAWN_INTERVAL_MS = 5000
+const SOCCER_BALL_W = 32
+const SOCCER_BALL_H = 32
+const SOCCER_BALL_POINTS = 500
 
 const rand = (min, max) => min + Math.random() * (max - min)
 
@@ -109,6 +114,20 @@ function freshPlayer() {
   }
 }
 
+// Returns a soccer ball object that bounces across the screen.
+function freshSoccerBall() {
+  const startY = rand(50, CANVAS_H - 100)
+  return {
+    x: rand(0, CANVAS_W - SOCCER_BALL_W),
+    y: startY,
+    w: SOCCER_BALL_W,
+    h: SOCCER_BALL_H,
+    vx: Math.random() < 0.5 ? SOCCER_BALL_SPEED : -SOCCER_BALL_SPEED,
+    vy: rand(-1.5, 1.5),
+    active: true,
+  }
+}
+
 // Builds the full initial game state for a brand new game, with score, lives, and
 // wave all reset to their starting values.
 function freshState() {
@@ -127,6 +146,8 @@ function freshState() {
     enemyBullets: [],
     enemies: buildEnemies(),
     stars: buildStars(),
+    soccerBall: null,
+    soccerBallTimer: SOCCER_BALL_SPAWN_INTERVAL_MS,
   }
 }
 
@@ -203,7 +224,9 @@ export default function App() {
       fish.src = '/images/flying-fish.png'
       const dog = new Image()
       dog.src = '/images/surprised-dog.png'
-      imagesRef.current = { plain, tie, coder, player, fish, dog }
+      const soccerBall = new Image()
+      soccerBall.src = '/images/soccer-ball.png'
+      imagesRef.current = { plain, tie, coder, player, fish, dog, soccerBall }
     }
     if (!audioRef.current) {
       audioRef.current = new Audio('/sounds/meow.mp3')
@@ -273,6 +296,38 @@ export default function App() {
           enemy.y += enemy.flyVY * frameScale
           enemy.rot += enemy.rotSpeed * frameScale
           if (enemy.deathT > ENEMY_DEATH_MS) enemy.alive = false
+        }
+      }
+
+      // soccer ball spawning and movement
+      if (state.phase === 'playing') {
+        state.soccerBallTimer -= deltaMs
+        if (state.soccerBallTimer <= 0) {
+          state.soccerBall = freshSoccerBall()
+          state.soccerBallTimer = SOCCER_BALL_SPAWN_INTERVAL_MS
+        }
+
+        if (state.soccerBall && state.soccerBall.active) {
+          state.soccerBall.x += state.soccerBall.vx * frameScale
+          state.soccerBall.y += state.soccerBall.vy * frameScale
+
+          // Bounce off left and right edges
+          if (state.soccerBall.x <= 0) {
+            state.soccerBall.x = 0
+            state.soccerBall.vx = Math.abs(state.soccerBall.vx)
+          } else if (state.soccerBall.x + SOCCER_BALL_W >= CANVAS_W) {
+            state.soccerBall.x = CANVAS_W - SOCCER_BALL_W
+            state.soccerBall.vx = -Math.abs(state.soccerBall.vx)
+          }
+
+          // Bounce off top and bottom edges
+          if (state.soccerBall.y <= 0) {
+            state.soccerBall.y = 0
+            state.soccerBall.vy = Math.abs(state.soccerBall.vy)
+          } else if (state.soccerBall.y + SOCCER_BALL_H >= CANVAS_H) {
+            state.soccerBall.y = CANVAS_H - SOCCER_BALL_H
+            state.soccerBall.vy = -Math.abs(state.soccerBall.vy)
+          }
         }
       }
 
@@ -363,6 +418,22 @@ export default function App() {
             break
           }
         }
+      }
+
+      // collisions: player bullets vs soccer ball
+      if (state.soccerBall && state.soccerBall.active) {
+        const usedBullets = new Set()
+        for (const bullet of state.bullets) {
+          if (usedBullets.has(bullet)) continue
+          if (rectsOverlap(bullet, state.soccerBall)) {
+            usedBullets.add(bullet)
+            state.soccerBall.active = false
+            state.score += SOCCER_BALL_POINTS
+            playMeow()
+            break
+          }
+        }
+        if (usedBullets.size) state.bullets = state.bullets.filter((bullet) => !usedBullets.has(bullet))
       }
 
       // collisions: player bullets vs enemies
@@ -476,6 +547,11 @@ export default function App() {
 
       for (const bullet of state.bullets) ctx.drawImage(imgs.fish, bullet.x, bullet.y, bullet.w, bullet.h)
       for (const enemyBullet of state.enemyBullets) ctx.drawImage(imgs.dog, enemyBullet.x, enemyBullet.y, enemyBullet.w, enemyBullet.h)
+
+      // Draw soccer ball if active
+      if (state.soccerBall && state.soccerBall.active) {
+        ctx.drawImage(imgs.soccerBall, state.soccerBall.x, state.soccerBall.y, state.soccerBall.w, state.soccerBall.h)
+      }
 
       ctx.save()
       if (state.player.dying) {
